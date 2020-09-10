@@ -42,8 +42,9 @@ class MailgunBackend(BaseEmailBackend):
     """
 
     def __init__(self, fail_silently=False, *args, **kwargs):
-        access_key, server_name = (kwargs.pop('access_key', None),
-                                   kwargs.pop('server_name', None))
+        access_key, server_name, api_url_prefix = (kwargs.pop('access_key', None),
+                                                   kwargs.pop('server_name', None),
+                                                   kwargs.pop('api_url_prefix', None))
 
         super(MailgunBackend, self).__init__(
             fail_silently=fail_silently,
@@ -52,13 +53,14 @@ class MailgunBackend(BaseEmailBackend):
         try:
             self._access_key = access_key or getattr(settings, 'MAILGUN_ACCESS_KEY')
             self._server_name = server_name or getattr(settings, 'MAILGUN_SERVER_NAME')
+            self._api_url_prefix = api_url_prefix or getattr(settings, 'MAILGUN_API_URL_PREFIX')
         except AttributeError:
             if fail_silently:
                 self._access_key, self._server_name = None
             else:
                 raise
 
-        self._api_url = "https://api.mailgun.net/v3/%s/" % self._server_name
+        self._api_url = f"{self._api_url_prefix}/{self._server_name}/"
         self._headers_map = HEADERS_MAP
 
     def open(self):
